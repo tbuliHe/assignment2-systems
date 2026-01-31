@@ -3,35 +3,39 @@ from __future__ import annotations
 from typing import Type
 
 import torch
-
-
+from cs336_systems.flash_attention import FlashAttention2Forward, TritonFlashAttention2
+# from cs336_systems.paralism.individual_ddp import IndividualDDP
+# from cs336_systems.paralism.individual_bucketed_ddp import DDP_Bucketed
+# from cs336_systems.paralism.optimizer_sharding import OptimizerSharding
 
 def get_flashattention_autograd_function_pytorch() -> Type:
     """
-    Returns a torch.autograd.Function subclass that implements FlashAttention2.
-    The expectation is that this class will implement FlashAttention2
-    using only standard PyTorch operations (no Triton!).
+    Returns a torch.autograd.Function subclass that implements RMSNorm.
+    The expectation is that this class will implement RMSNorm
+    using standard PyTorch operations.
 
     Returns:
         A class object (not an instance of the class)
     """
-    # For example: return MyFlashAttnAutogradFunctionClass
+    # For example: return MyRMSNormAutogradFunctionClass
+    return FlashAttention2Forward
     raise NotImplementedError
 
 
 def get_flashattention_autograd_function_triton() -> Type:
     """
-    Returns a torch.autograd.Function subclass that implements FlashAttention2
+    Returns a torch.autograd.Function subclass that implements RMSNorm
     using Triton kernels.
     The expectation is that this class will implement the same operations
-    as the class you return in get_flashattention_autograd_function_pytorch(),
+    as the class you return in get_rmsnorm_autograd_function_pytorch(),
     but it should do so by invoking custom Triton kernels in the forward
     and backward passes.
 
     Returns:
         A class object (not an instance of the class)
     """
-    # For example: return MyTritonFlashAttentionAutogradFunctionClass
+    return TritonFlashAttention2
+    # For example: return MyTritonRMSNormAutogradFunctionClass
     raise NotImplementedError
 
 
@@ -52,6 +56,7 @@ def get_ddp_individual_parameters(module: torch.nn.Module) -> torch.nn.Module:
     Returns:
         Instance of a DDP class.
     """
+    # return IndividualDDP(module)
     # For example: return DDPIndividualParameters(module)
     raise NotImplementedError
 
@@ -67,8 +72,9 @@ def ddp_individual_parameters_on_after_backward(ddp_model: torch.nn.Module, opti
         optimizer: torch.optim.Optimizer
             Optimizer being used with the DDP-wrapped model.
     """
+    ddp_model.finish_gradient_synchronization()
     # For example: ddp_model.finish_gradient_synchronization()
-    raise NotImplementedError
+    # raise NotImplementedError
 
 
 def get_ddp_bucketed(module: torch.nn.Module, bucket_size_mb: float) -> torch.nn.Module:
@@ -89,6 +95,7 @@ def get_ddp_bucketed(module: torch.nn.Module, bucket_size_mb: float) -> torch.nn
     Returns:
         Instance of a DDP class.
     """
+    # return DDP_Bucketed(module, bucket_size_mb)
     raise NotImplementedError
 
 
@@ -104,6 +111,7 @@ def ddp_bucketed_on_after_backward(ddp_model: torch.nn.Module, optimizer: torch.
             Optimizer being used with the DDP-wrapped model.
     """
     # For example: ddp_model.finish_gradient_synchronization()
+    # return ddp_model.finish_gradient_synchronization()
     raise NotImplementedError
 
 
@@ -136,4 +144,5 @@ def get_sharded_optimizer(params, optimizer_cls: Type[torch.optim.Optimizer], **
     Returns:
         Instance of sharded optimizer.
     """
+    # return OptimizerSharding(params, optimizer_cls, **kwargs)
     raise NotImplementedError
